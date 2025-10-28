@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Doação de Animais — Adopet</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background:#f8f9fa; }
+    .preview-img { width:100%; max-height:200px; object-fit:cover; border-radius:6px; margin-bottom:8px; }
+    .dropzone { border: 2px dashed #ced4da; padding: 12px; border-radius:6px; background:white; cursor:pointer; text-align:center; }
+  </style>
+</head>
+<body>
+
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h3 class="card-title text-center mb-3">📣 Doação / Entrega de Animal</h3>
+            <p class="text-center text-muted mb-4">Preencha os dados abaixo para que possamos avaliar e ajudar na entrega responsável do animal.</p>
+
+            <form id="formDoacaoAnimais" onsubmit="return enviarDoacaoAnimais(event)">
+
+              <!-- Dados do animal -->
+              <h5>Informações do animal</h5>
+              <div class="mb-3">
+                <label class="form-label">Tipo de animal <span class="text-danger">*</span></label>
+                <select class="form-select" id="tipoAnimal" required>
+                  <option value="">Selecione...</option>
+                  <option>Gato</option>
+                  <option>Cachorro</option>
+                  <option>Coelho</option>
+                  <option>Outro</option>
+                </select>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Nome (se tiver)</label>
+                  <input type="text" id="nomeAnimal" class="form-control" placeholder="Ex: Neném">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Idade aproximada</label>
+                  <input type="text" id="idadeAnimal" class="form-control" placeholder="Ex: 2 anos / filhote">
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Sexo</label>
+                <select id="sexoAnimal" class="form-select">
+                  <option value="">Indiferente</option>
+                  <option>Macho</option>
+                  <option>Fêmea</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Raça / Porte (se souber)</label>
+                <input type="text" id="racaAnimal" class="form-control" placeholder="Ex: SRD, Poodle, Pequeno, Médio...">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Situação de saúde (vacinas, castração, doenças)</label>
+                <textarea id="saudeAnimal" class="form-control" rows="2" placeholder="Descreva: vacinas em dia? castrado? alergias?"></textarea>
+              </div>
+
+              <!-- Fotos -->
+              <div class="mb-3">
+                <label class="form-label">Fotos do animal (até 4)</label>
+                <div id="dropzone" class="dropzone mb-2">
+                  Clique ou arraste as imagens aqui
+                  <input id="fotos" type="file" accept="image/*" multiple style="display:none;">
+                </div>
+                <div id="preview" class="row g-2"></div>
+              </div>
+
+              <hr>
+
+              <!-- Dados do doador -->
+              <h5>Seus dados</h5>
+              <div class="mb-3">
+                <label class="form-label">Seu nome <span class="text-danger">*</span></label>
+                <input type="text" id="nomeDoador" class="form-control" required>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Telefone (WhatsApp preferencial) <span class="text-danger">*</span></label>
+                  <input type="tel" id="telefoneDoador" class="form-control" placeholder="ex: 11 99999-9999" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">E-mail</label>
+                  <input type="email" id="emailDoador" class="form-control" placeholder="seu@email.com">
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Cidade / Bairro <span class="text-danger">*</span></label>
+                <input type="text" id="localDoador" class="form-control" placeholder="Cidade, bairro" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Motivo da doação</label>
+                <textarea id="motivoDoacao" class="form-control" rows="3" placeholder="Explique brevemente por que está doando/entregando o animal" required></textarea>
+              </div>
+
+              <!-- Consentimento -->
+              <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="consentimento" required>
+                <label class="form-check-label" for="consentimento">
+                  Confirmo que estou entregando o animal voluntariamente e que as informações são verdadeiras.
+                </label>
+              </div>
+
+              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="index.html" class="btn btn-outline-secondary">Voltar</a>
+                <button class="btn btn-primary" type="submit">Enviar Doação</button>
+              </div>
+            </form>
+
+            <div id="mensagemSucesso" class="alert alert-success mt-3 d-none" role="alert">
+              ✅ Doação enviada — obrigado! Entraremos em contato pelo telefone informado.
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Drag/drop e preview simples
+    const dropzone = document.getElementById('dropzone');
+    const inputFotos = document.getElementById('fotos');
+    const preview = document.getElementById('preview');
+
+    dropzone.addEventListener('click', () => inputFotos.click());
+    dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.style.borderColor = '#0d6efd'; });
+    dropzone.addEventListener('dragleave', () => { dropzone.style.borderColor = '#ced4da'; });
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.style.borderColor = '#ced4da';
+      inputFotos.files = e.dataTransfer.files;
+      mostrarPreview();
+    });
+
+    inputFotos.addEventListener('change', mostrarPreview);
+
+    function mostrarPreview() {
+      preview.innerHTML = '';
+      const files = Array.from(inputFotos.files).slice(0,4); // até 4
+      files.forEach(file => {
+        if (!file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const col = document.createElement('div');
+          col.className = 'col-6';
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.className = 'preview-img';
+          col.appendChild(img);
+          preview.appendChild(col);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Simulação de envio: valida, mostra mensagem e "limpa"
+    function enviarDoacaoAnimais(e) {
+      e.preventDefault();
+
+      // validação básica extra: tipo selecionado e fotos
+      const tipo = document.getElementById('tipoAnimal').value;
+      const nomeDoador = document.getElementById('nomeDoador').value.trim();
+      const telefone = document.getElementById('telefoneDoador').value.trim();
+      const local = document.getElementById('localDoador').value.trim();
+      const consent = document.getElementById('consentimento').checked;
+
+      if (!tipo || !nomeDoador || !telefone || !local || !consent) {
+        alert('Por favor, preencha todos os campos obrigatórios e confirme o consentimento.');
+        return false;
+      }
+
+      // aqui você poderia enviar os dados via fetch() para um backend
+      // como exemplo, mostramos mensagem de sucesso e limpamos formulário
+      document.getElementById('mensagemSucesso').classList.remove('d-none');
+
+      // resetar formulário após 2.5s e esconder mensagem depois de 4s
+      setTimeout(() => {
+        document.getElementById('formDoacaoAnimais').reset();
+        preview.innerHTML = '';
+      }, 2500);
+
+      setTimeout(() => {
+        document.getElementById('mensagemSucesso').classList.add('d-none');
+      }, 4000);
+
+      return false;
+    }
+  </script>
+
+</body>
+</html>
